@@ -1,0 +1,2 @@
+C:\Users\rvunvulea\Downloads\DevTalksDemo\ContosoUniversity\obj\Debug\ContosoUniversity.csproj.AssemblyReference.cache
+C:\Users\rvunvulea\Downloads\DevTalksDemo\ContosoUniversity\obj\Debug\ContosoUniversity.csproj.CoreCompileInputs.cache
