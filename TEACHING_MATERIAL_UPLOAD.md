@@ -7,9 +7,9 @@ This feature allows administrators to upload images for teaching materials (text
 - **Image Upload**: Upload teaching material images when creating or editing courses
 - **File Validation**: Supports JPG, JPEG, PNG, GIF, and BMP formats
 - **Size Limits**: Maximum file size of 5MB per image
-- **Secure Storage**: Images are stored in `/Uploads/TeachingMaterials/` directory
+- **Secure Storage**: Images are stored in Azure Blob Storage (private container, Managed Identity authentication)
 - **Automatic Cleanup**: Images are automatically deleted when courses are removed
-- **Unique Filenames**: Each uploaded image gets a unique filename to prevent conflicts
+- **Unique Filenames**: Each uploaded image gets a unique blob name to prevent conflicts
 
 ## Usage
 
@@ -38,33 +38,34 @@ This feature allows administrators to upload images for teaching materials (text
 ## Technical Details
 
 ### File Storage
-- Images are stored in `/Uploads/TeachingMaterials/` directory
-- Filenames follow the pattern: `course_{CourseID}_{GUID}.{extension}`
-- Old images are automatically deleted when replaced
-- **Important**: Uploaded images are excluded from git repository via `.gitignore`
-
-### Git Repository Management
-- The `/Uploads/TeachingMaterials/` directory structure is preserved in git with a `.gitkeep` file
-- Actual uploaded images are excluded from version control to:
-  - Keep repository size manageable
-  - Prevent sensitive content from being committed
-  - Avoid merge conflicts with binary files
-- When deploying to new environments, ensure the upload directory has proper write permissions
+- Images are uploaded to an Azure Blob Storage container (default name `teaching-materials`) via
+  `ContosoUniversity.Services.AzureBlobStorageService` (`Azure.Storage.Blobs` SDK)
+- Authentication uses Azure Managed Identity (`DefaultAzureCredential`) - no account keys or
+  connection strings are stored in configuration
+- Blob names follow the pattern: `course_{CourseID}_{GUID}.{extension}`
+- Old blobs are automatically deleted when replaced (the new blob is uploaded first, then the
+  previous one is removed, so a failed upload never destroys the existing image)
+- The storage account name is configured via the `AzureStorage:AccountName` application setting
+  (see `Web.config` / Azure App Configuration) - the blob endpoint is constructed at runtime as
+  `https://{AzureStorage:AccountName}.blob.core.windows.net`
 
 ### Database Schema
-- New field: `TeachingMaterialImagePath` (VARCHAR(255)) added to the Course table
-- Stores the relative path to the uploaded image file
+- Field: `TeachingMaterialImagePath` (VARCHAR(255)) on the Course table
+- Stores the absolute Azure Blob Storage URL of the uploaded image (previously stored a relative
+  local-disk virtual path such as `~/Uploads/TeachingMaterials/xyz.jpg`)
 
 ### Security
 - File type validation prevents uploading of non-image files
 - File size validation prevents uploads larger than 5MB
 - Only authenticated users with appropriate roles can upload images
+- The blob container is created with private (`PublicAccessType.None`) access; only identities
+  granted an appropriate Azure RBAC role (e.g. `Storage Blob Data Contributor`) can read or write
 
 ### Authorization
 - **Create/Upload**: Admin role required
 - **Edit/Upload**: Admin or Teacher role required
 - **View**: All authenticated users can view images
-- **Delete**: Admin role required (deletes both course and associated image)
+- **Delete**: Admin role required (deletes both course and associated blob)
 
 ## Troubleshooting
 
@@ -72,7 +73,11 @@ This feature allows administrators to upload images for teaching materials (text
 
 1. **"File too large" error**: Ensure your image is under 5MB
 2. **"Invalid file type" error**: Only JPG, JPEG, PNG, GIF, and BMP files are supported
-3. **Upload fails**: Check that the `/Uploads/TeachingMaterials/` directory exists and has write permissions
+3. **Upload fails / `InvalidOperationException` about `AzureStorage:AccountName`**: Ensure the
+   `AzureStorage:AccountName` application setting has been set to the provisioned storage account
+   name (see `infra/infra-config.md` once the platform-engineer task has provisioned it)
+4. **Upload fails with 401/403**: Ensure the app's Managed Identity has been granted the
+   `Storage Blob Data Contributor` role on the target storage account/container
 
 ### Configuration
 
@@ -81,23 +86,23 @@ The following settings in `Web.config` control file upload limits:
 - `maxAllowedContentLength="10485760"` (10MB in bytes)
 - `executionTimeout="3600"` (1 hour timeout for large uploads)
 
+The following settings in `Web.config` control the Azure Blob Storage destination:
+- `AzureStorage:AccountName` - the storage account hosting teaching-material blobs
+- `AzureStorage:ContainerName` - the blob container name (default `teaching-materials`)
+
 ## Deployment Considerations
 
 ### Initial Setup
-1. Ensure the `/Uploads/TeachingMaterials/` directory exists on the server
-2. Set appropriate write permissions for the application pool identity
-3. Verify the web.config upload limits are appropriate for your hosting environment
-
-### File System Permissions
-The application needs write access to the `/Uploads/TeachingMaterials/` directory:
-- **IIS**: Grant `IIS_IUSRS` or application pool identity write permissions
-- **Development**: Ensure the development user has write access
+1. Provision an Azure Storage account and grant the application's Managed Identity the
+   `Storage Blob Data Contributor` role on it (the application creates the `teaching-materials`
+   container automatically on first use via `CreateIfNotExists`)
+2. Set the `AzureStorage:AccountName` application setting (directly, or via Azure App Configuration)
+   to the provisioned storage account name
 
 ### Backup Strategy
-Since uploaded images are not in version control, implement a backup strategy:
-- Regular file system backups of the `/Uploads/` directory
-- Consider cloud storage integration for production environments
-- Document the restore process for disaster recovery
+- Configure standard Azure Storage data protection features (soft delete, versioning, or
+  geo-redundant storage) for the `teaching-materials` container as appropriate for your
+  environment
 
 ## Future Enhancements
 
@@ -107,3 +112,4 @@ Potential improvements for this feature:
 - Image gallery view
 - Bulk upload functionality
 - Image metadata support (alt text, captions)
+

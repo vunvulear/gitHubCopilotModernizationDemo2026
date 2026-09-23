@@ -7,11 +7,18 @@ using System.IO;
 using System.Web;
 using ContosoUniversity.Data;
 using ContosoUniversity.Models;
+using ContosoUniversity.Services;
 
 namespace ContosoUniversity.Controllers
 {
     public class CoursesController : BaseController
     {
+        // Teaching-material images are stored in Azure Blob Storage (task 004) instead of local
+        // disk. Default-constructed like BaseController.notificationService so `new
+        // CoursesController()` keeps working for both MVC (parameterless activation) and unit
+        // tests that construct the controller directly.
+        private IBlobStorageService blobStorageService = new AzureBlobStorageService();
+
         // GET: Courses
         public ActionResult Index()
         {
@@ -72,20 +79,12 @@ namespace ContosoUniversity.Controllers
 
                     try
                     {
-                        // Create uploads directory if it doesn't exist
-                        var uploadsPath = Server.MapPath("~/Uploads/TeachingMaterials/");
-                        if (!Directory.Exists(uploadsPath))
-                        {
-                            Directory.CreateDirectory(uploadsPath);
-                        }
-
-                        // Generate unique filename
-                        var fileName = $"course_{course.CourseID}_{Guid.NewGuid()}{fileExtension}";
-                        var filePath = Path.Combine(uploadsPath, fileName);
-
-                        // Save file
-                        teachingMaterialImage.SaveAs(filePath);
-                        course.TeachingMaterialImagePath = $"~/Uploads/TeachingMaterials/{fileName}";
+                        // Upload the teaching material image to Azure Blob Storage. The service
+                        // returns the absolute blob URL, stored as the reference used by the UI
+                        // (Views render it via @Url.Content, which passes absolute URLs through
+                        // unchanged).
+                        course.TeachingMaterialImagePath = blobStorageService.UploadTeachingMaterial(
+                            course.CourseID, fileExtension, teachingMaterialImage.InputStream, teachingMaterialImage.ContentType);
                     }
                     catch (Exception ex)
                     {
@@ -155,30 +154,17 @@ namespace ContosoUniversity.Controllers
 
                     try
                     {
-                        // Create uploads directory if it doesn't exist
-                        var uploadsPath = Server.MapPath("~/Uploads/TeachingMaterials/");
-                        if (!Directory.Exists(uploadsPath))
+                        // Upload the new image first, then remove the old blob (if any). Uploading
+                        // first avoids losing the previous image if the upload itself fails.
+                        var previousImagePath = course.TeachingMaterialImagePath;
+
+                        course.TeachingMaterialImagePath = blobStorageService.UploadTeachingMaterial(
+                            course.CourseID, fileExtension, teachingMaterialImage.InputStream, teachingMaterialImage.ContentType);
+
+                        if (!string.IsNullOrEmpty(previousImagePath))
                         {
-                            Directory.CreateDirectory(uploadsPath);
+                            blobStorageService.DeleteTeachingMaterial(previousImagePath);
                         }
-
-                        // Generate unique filename
-                        var fileName = $"course_{course.CourseID}_{Guid.NewGuid()}{fileExtension}";
-                        var filePath = Path.Combine(uploadsPath, fileName);
-
-                        // Delete old file if exists
-                        if (!string.IsNullOrEmpty(course.TeachingMaterialImagePath))
-                        {
-                            var oldFilePath = Server.MapPath(course.TeachingMaterialImagePath);
-                            if (System.IO.File.Exists(oldFilePath))
-                            {
-                                System.IO.File.Delete(oldFilePath);
-                            }
-                        }
-
-                        // Save new file
-                        teachingMaterialImage.SaveAs(filePath);
-                        course.TeachingMaterialImagePath = $"~/Uploads/TeachingMaterials/{fileName}";
                     }
                     catch (Exception ex)
                     {
@@ -225,22 +211,18 @@ namespace ContosoUniversity.Controllers
             Course course = db.Courses.Find(id);
             var courseTitle = course.Title;
             
-            // Delete associated image file if it exists
+            // Delete associated teaching material blob if it exists
             if (!string.IsNullOrEmpty(course.TeachingMaterialImagePath))
             {
-                var filePath = Server.MapPath(course.TeachingMaterialImagePath);
-                if (System.IO.File.Exists(filePath))
+                try
                 {
-                    try
-                    {
-                        System.IO.File.Delete(filePath);
-                    }
-                    catch (Exception ex)
-                    {
-                        // Log the error but don't prevent deletion of the course
-                        // In a production application, you would log this error properly
-                        System.Diagnostics.Debug.WriteLine($"Error deleting file: {ex.Message}");
-                    }
+                    blobStorageService.DeleteTeachingMaterial(course.TeachingMaterialImagePath);
+                }
+                catch (Exception ex)
+                {
+                    // Log the error but don't prevent deletion of the course
+                    // In a production application, you would log this error properly
+                    System.Diagnostics.Debug.WriteLine($"Error deleting teaching material blob: {ex.Message}");
                 }
             }
             
