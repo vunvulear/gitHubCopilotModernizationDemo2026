@@ -57,7 +57,7 @@
       },
       "successCriteriaStatus": {
         "passBuild": "true",
-        "passUnitTests": "not-applicable-preexisting-gap"
+        "passUnitTests": "false"
       }
     },
     {
@@ -67,6 +67,7 @@
       "reason": "The current database is tied to LocalDB and must be replaced with an Azure-managed database service for cloud hosting.",
       "requirements": "Migrate the EF Core persistence layer to Azure SQL Database while preserving the current schema, seed data, and CRUD behavior. Replace any local integrated-security assumptions with Azure-safe access and keep the application data model consistent during cutover.",
       "status": "success",
+      "taskSummary": "Migrated LocalDB connection settings to Azure SQL Database using Managed Identity authentication (Authentication=Active Directory Default), upgraded Microsoft.Data.SqlClient, and aligned dependency/binding redirect versions. Build succeeds and no LocalDB/System.Data.SqlClient references remain in configuration or code paths for runtime DB access.",
       "dependencies": [
         "002-transform-azure-app-configuration-and-key-vault"
       ],
@@ -83,6 +84,10 @@
       "successCriteria": {
         "passBuild": "true",
         "passUnitTests": "true"
+      },
+      "successCriteriaStatus": {
+        "passBuild": "true",
+        "passUnitTests": "false"
       }
     },
     {
@@ -91,6 +96,7 @@
       "description": "Move teaching-material uploads from local disk to Azure Blob Storage. Addresses issues: Local or network IO operations detected; Static content detected; path traversal risk around uploaded files.",
       "reason": "The current upload flow relies on local file paths and cannot be depended on in cloud hosting.",
       "requirements": "Move course teaching-material uploads and deletions off local disk into Azure Blob Storage. Keep upload validation, preserve the stored reference used by the UI and database, and remove filesystem path assumptions from persisted upload handling.",
+      "status": "started",
       "dependencies": [
         "003-transform-azure-sql-database"
       ],
