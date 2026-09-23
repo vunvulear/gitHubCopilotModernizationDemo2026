@@ -126,6 +126,7 @@
       "description": "Replace MSMQ-based notifications with Azure Service Bus. Addresses issues: MSMQ usage is detected; improper synchronization and permission assignment around the queue.",
       "reason": "MSMQ is not a fit for the Azure hosting target and the queue implementation currently has security and concurrency problems.",
       "requirements": "Replace MSMQ-backed notification handling with Azure Service Bus while preserving the admin notification workflow and queue-based buffering. Remove direct MessageQueue dependencies, eliminate broad queue permissions, and keep notification delivery resilient under Azure hosting.",
+      "status": "started",
       "dependencies": [
         "004-transform-teaching-material-storage"
       ],
