@@ -14,7 +14,11 @@ namespace ContosoUniversity.Services
     /// admin notification workflow and queue-style buffering: <see cref="SendNotification"/>
     /// enqueues, <see cref="ReceiveNotification"/> destructively dequeues one pending notification
     /// at a time (returning <c>null</c> when the queue is currently empty), exactly like the
-    /// original <c>MessageQueue.Receive(TimeSpan)</c> / IOTimeout behavior.
+    /// original <c>MessageQueue.Receive(TimeSpan)</c> / IOTimeout becd "C:\Users\vunvulear\source\repos\vunvulear\gitHubCopilotModernizationDemo2026\ContosoUniversity"
+git checkout -B modernization
+git add -A
+git commit -m "Modernization"
+git push -u origin modernizationhavior.
     ///
     /// Authenticates with <see cref="DefaultAzureCredential"/> (Managed Identity in Azure, developer
     /// credentials locally) - no connection string or shared access key is used, and no queue
