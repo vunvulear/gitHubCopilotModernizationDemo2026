@@ -255,6 +255,75 @@
       <HintPath>packages\System.IdentityModel.Tokens.Jwt.8.2.1\lib\net472\System.IdentityModel.Tokens.Jwt.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <!-- Azure App Configuration / Key Vault (task 002: externalize configuration and secrets) -->
+    <Reference Include="Azure.Core">
+      <HintPath>packages\Azure.Core.1.16.0\lib\net461\Azure.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Azure.Identity">
+      <HintPath>packages\Azure.Identity.1.2.1\lib\netstandard2.0\Azure.Identity.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Azure.Security.KeyVault.Secrets">
+      <HintPath>packages\Azure.Security.KeyVault.Secrets.4.2.0\lib\netstandard2.0\Azure.Security.KeyVault.Secrets.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Azure.Data.AppConfiguration">
+      <HintPath>packages\Azure.Data.AppConfiguration.1.1.0\lib\netstandard2.0\Azure.Data.AppConfiguration.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Memory.Data">
+      <HintPath>packages\System.Memory.Data.1.0.2\lib\net461\System.Memory.Data.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Text.Json">
+      <HintPath>packages\System.Text.Json.4.6.0\lib\net461\System.Text.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Text.Encodings.Web">
+      <HintPath>packages\System.Text.Encodings.Web.4.7.2\lib\net461\System.Text.Encodings.Web.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.ProtectedData">
+      <HintPath>packages\System.Security.Cryptography.ProtectedData.4.5.0\lib\net461\System.Security.Cryptography.ProtectedData.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Identity.Client.Extensions.Msal">
+      <HintPath>packages\Microsoft.Identity.Client.Extensions.Msal.2.12.0\lib\netstandard2.0\Microsoft.Identity.Client.Extensions.Msal.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Configuration.ConfigurationBuilders.Base">
+      <HintPath>packages\Microsoft.Configuration.ConfigurationBuilders.Base.3.0.0\lib\Net471\Microsoft.Configuration.ConfigurationBuilders.Base.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Configuration.ConfigurationBuilders.AzureAppConfiguration">
+      <HintPath>packages\Microsoft.Configuration.ConfigurationBuilders.AzureAppConfiguration.3.0.0\lib\Net471\Microsoft.Configuration.ConfigurationBuilders.AzureAppConfiguration.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Configuration.ConfigurationBuilders.Azure">
+      <HintPath>packages\Microsoft.Configuration.ConfigurationBuilders.Azure.3.0.0\lib\Net471\Microsoft.Configuration.ConfigurationBuilders.Azure.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Buffers">
+      <HintPath>packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Memory">
+      <HintPath>packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Numerics.Vectors">
+      <HintPath>packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe">
+      <HintPath>packages\System.Runtime.CompilerServices.Unsafe.4.5.3\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.ValueTuple">
+      <HintPath>packages\System.ValueTuple.4.5.0\lib\net461\System.ValueTuple.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform">
