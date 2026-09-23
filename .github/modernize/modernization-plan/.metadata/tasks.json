@@ -8,7 +8,7 @@
       "description": "Replace Windows authentication with Microsoft Entra ID and align admin access rules. Addresses issues: Windows authentication detected.",
       "reason": "Azure app hosting options do not support the current Windows-auth dependency, so identity must be modernized before the app can be cut over.",
       "requirements": "Move the app off Windows authentication so it can run on Azure hosting without relying on workstation or domain sign-in. Preserve the current admin and user experience, keep the MVC authorization flow coherent, and map existing roles or claims so admin-only features still work.",
-      "status": "started",
+      "status": "completed",
       "dependencies": [],
       "skills": [
         {

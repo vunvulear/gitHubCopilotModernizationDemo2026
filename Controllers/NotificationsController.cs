@@ -9,6 +9,7 @@ namespace ContosoUniversity.Controllers
     public class NotificationsController : BaseController
     {
         // GET: api/notifications - Get pending notifications for admin
+        [EntraAuthorize(Roles = "Admin")]
         [HttpGet]
         public JsonResult GetNotifications()
         {
@@ -41,6 +42,7 @@ namespace ContosoUniversity.Controllers
         }
 
         // POST: api/notifications/mark-read
+        [EntraAuthorize(Roles = "Admin")]
         [HttpPost]
         public JsonResult MarkAsRead(int id)
         {
@@ -57,6 +59,7 @@ namespace ContosoUniversity.Controllers
         }
 
         // GET: Notifications/Index - Admin notification dashboard
+        [EntraAuthorize(Roles = "Admin")]
         public ActionResult Index()
         {
             return View();

@@ -1,0 +1,11 @@
+@{
+    ViewBag.Title = "Access Denied";
+}
+
+<h1 class="text-danger">Access Denied</h1>
+<p>@ViewBag.Message</p>
+<p>
+    If you believe you should have access to this page, contact your Contoso University
+    administrator to confirm your Microsoft Entra ID role assignment.
+</p>
+<p><a class="btn btn-default" href="@Url.Action("Index", "Home")">Return to Home &raquo;</a></p>

@@ -133,7 +133,8 @@ namespace ContosoUniversity.Controllers
             return View(department);
         }
 
-        // GET: Departments/Delete/5
+        // GET: Departments/Delete/5 - Only admins can delete departments
+        [EntraAuthorize(Roles = "Admin")]
         public ActionResult Delete(int? id)
         {
             if (id == null)
@@ -148,7 +149,8 @@ namespace ContosoUniversity.Controllers
             return View(department);
         }
 
-        // POST: Departments/Delete/5
+        // POST: Departments/Delete/5 - Only admins can delete departments
+        [EntraAuthorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)

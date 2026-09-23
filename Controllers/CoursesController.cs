@@ -200,7 +200,8 @@ namespace ContosoUniversity.Controllers
             return View(course);
         }
 
-        // GET: Courses/Delete/5
+        // GET: Courses/Delete/5 - Only admins can delete courses
+        [EntraAuthorize(Roles = "Admin")]
         public ActionResult Delete(int? id)
         {
             if (id == null)
@@ -215,7 +216,8 @@ namespace ContosoUniversity.Controllers
             return View(course);
         }
 
-        // POST: Courses/Delete/5
+        // POST: Courses/Delete/5 - Only admins can delete courses
+        [EntraAuthorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
