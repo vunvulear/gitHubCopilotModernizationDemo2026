@@ -1,0 +1,164 @@
+{
+  "GeneratedAt": "2026-09-23T11:00:11.4374133Z",
+  "ProjectPath": "C:\\Users\\vunvulear\\source\\repos\\vunvulear\\gitHubCopilotModernizationDemo2026\\ContosoUniversity",
+  "Summary": {
+    "TotalFindings": 11,
+    "CveCount": 0,
+    "CweCount": 11,
+    "BySeverity": {
+      "optional": 5,
+      "potential": 5,
+      "mandatory": 1
+    },
+    "ByCategory": {
+      "Code Quality": 2,
+      "Concurrency \u0026 Synchronization": 2,
+      "Credentials \u0026 Secrets": 2,
+      "File \u0026 Path Security": 3,
+      "Injection Attacks": 2
+    },
+    "TotalRulesAssessed": 59,
+    "RulesPassed": 48
+  },
+  "CveFindings": [],
+  "CweFindings": [
+    {
+      "Id": "CWE-570",
+      "Name": "Expression is Always False",
+      "Category": "Code Quality",
+      "Severity": "optional",
+      "StoryPoint": 1,
+      "Description": "The product contains an expression that will always evaluate to false.",
+      "Files": [
+        "Controllers/StudentsController.cs"
+      ],
+      "Explanation": "StudentsController.Details queries the student with Single() at lines 69-72, then checks \u0060if (student == null)\u0060 at line 73. Because Single() either returns an entity or throws, the null check is unreachable and always false."
+    },
+    {
+      "Id": "CWE-606",
+      "Name": "Unchecked Input for Loop Condition",
+      "Category": "Code Quality",
+      "Severity": "potential",
+      "StoryPoint": 3,
+      "Description": "The product does not properly check inputs that are used for loop conditions, potentially leading to a denial of service or other consequences because of excessive looping.",
+      "Files": [
+        "Controllers/InstructorsController.cs"
+      ],
+      "Explanation": "InstructorsController.Create iterates directly over the request-bound \u0060selectedCourses\u0060 array at lines 72-79 with no cap on the number of items. An oversized submission can drive unbounded loop iterations from untrusted input."
+    },
+    {
+      "Id": "CWE-662",
+      "Name": "Improper Synchronization",
+      "Category": "Concurrency \u0026 Synchronization",
+      "Severity": "potential",
+      "StoryPoint": 8,
+      "Description": "The product utilizes multiple threads or processes to allow temporary access to a shared resource that can only be exclusive to one process at a time, but it does not properly synchronize these actions, which might cause simultaneous accesses of this resource by multiple threads or processes.",
+      "Files": [
+        "Controllers/BaseController.cs",
+        "Services/NotificationService.cs"
+      ],
+      "Explanation": "BaseController creates a new NotificationService per controller instance, and NotificationService.NotificationService() (lines 14-32) checks MessageQueue.Exists(_queuePath) and then creates/opens the same queue without any synchronization. Concurrent requests during startup can race on the shared MSMQ resource."
+    },
+    {
+      "Id": "CWE-820",
+      "Name": "Missing Synchronization",
+      "Category": "Concurrency \u0026 Synchronization",
+      "Severity": "potential",
+      "StoryPoint": 8,
+      "Description": "The product utilizes a shared resource in a concurrent manner but does not attempt to synchronize access to the resource.",
+      "Files": [
+        "Controllers/BaseController.cs",
+        "Services/NotificationService.cs"
+      ],
+      "Explanation": "The application uses the MSMQ queue from multiple request paths via BaseController\u0027s per-request NotificationService instance, but NotificationService.NotificationService() performs queue existence and creation operations with no synchronization or coordination around the shared queue path."
+    },
+    {
+      "Id": "CWE-732",
+      "Name": "Incorrect Permission Assignment for Critical Resource",
+      "Category": "Credentials \u0026 Secrets",
+      "Severity": "optional",
+      "StoryPoint": 5,
+      "Description": "The product specifies permissions for a security-critical resource in a way that allows that resource to be read or modified by unintended actors.",
+      "Files": [
+        "Services/NotificationService.cs"
+      ],
+      "Explanation": "In NotificationService() the queue is created with \u0060_queue.SetPermissions(\u0022Everyone\u0022, MessageQueueAccessRights.FullControl);\u0060 (line 23), granting every user full control over the notification queue resource."
+    },
+    {
+      "Id": "CWE-778",
+      "Name": "Insufficient Logging",
+      "Category": "Credentials \u0026 Secrets",
+      "Severity": "potential",
+      "StoryPoint": 3,
+      "Description": "When a security-critical event occurs, the product either does not record the event or omits important details about the event when logging it.",
+      "Files": [
+        "Controllers/BaseController.cs",
+        "Services/NotificationService.cs"
+      ],
+      "Explanation": "BaseController.SendEntityNotification() hardcodes \u0060userName = \u0022System\u0022\u0060 before recording entity create/update/delete notifications, and NotificationService.SendNotification() stores \u0060CreatedBy = userName ?? \u0022System\u0022\u0060 (lines 28-29 and 50). The resulting audit record omits the actual actor for security-relevant changes."
+    },
+    {
+      "Id": "CWE-22",
+      "Name": "Improper Limitation of a Pathname to a Restricted Directory (\u0027Path Traversal\u0027)",
+      "Category": "File \u0026 Path Security",
+      "Severity": "optional",
+      "StoryPoint": 8,
+      "Description": "The product uses external input to construct a pathname that is intended to identify a file or directory that is located underneath a restricted parent directory, but the product does not properly neutralize special elements within the pathname that can cause the pathname to resolve to a location that is outside of the restricted directory.",
+      "Files": [
+        "Controllers\\CoursesController.cs",
+        "Views\\Courses\\Edit.cshtml"
+      ],
+      "Explanation": "Controllers.CoursesController.Edit/DeleteConfirmed accept the client-controlled TeachingMaterialImagePath value (bound on the Course model and posted back via the hidden field in Views\\Courses\\Edit.cshtml:64) and pass it directly to Server.MapPath at Controllers\\CoursesController.cs:172 and 229 before deleting the file. No normalization or directory restriction is applied, so crafted path elements can resolve outside the intended upload directory."
+    },
+    {
+      "Id": "CWE-23",
+      "Name": "Relative Path Traversal",
+      "Category": "File \u0026 Path Security",
+      "Severity": "optional",
+      "StoryPoint": 5,
+      "Description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize sequences such as .. that can resolve to a location that is outside of that directory.",
+      "Files": [
+        "Controllers\\CoursesController.cs",
+        "Views\\Courses\\Edit.cshtml"
+      ],
+      "Explanation": "Controllers.CoursesController.Edit/DeleteConfirmed use the posted TeachingMaterialImagePath from the edit form (Views\\Courses\\Edit.cshtml:64) and resolve it with Server.MapPath at Controllers\\CoursesController.cs:172 and 229. Because the value is taken from the client without validation, relative traversal sequences such as .. can be interpreted outside the upload root."
+    },
+    {
+      "Id": "CWE-36",
+      "Name": "Absolute Path Traversal",
+      "Category": "File \u0026 Path Security",
+      "Severity": "optional",
+      "StoryPoint": 5,
+      "Description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize absolute path sequences such as /abs/path that can resolve to a location that is outside of that directory.",
+      "Files": [
+        "Controllers\\CoursesController.cs",
+        "Views\\Courses\\Edit.cshtml"
+      ],
+      "Explanation": "Controllers.CoursesController.Edit/DeleteConfirmed take the user-supplied TeachingMaterialImagePath from the bound model and hidden edit-field, then call Server.MapPath on it at Controllers\\CoursesController.cs:172 and 229. Absolute virtual-path input is not rejected before resolution, so an attacker can supply a path that maps outside the intended directory."
+    },
+    {
+      "Id": "CWE-99",
+      "Name": "CWE-99: Improper Control of Resource Identifiers (\u0027Resource Injection\u0027)",
+      "Category": "Injection Attacks",
+      "Severity": "potential",
+      "StoryPoint": 3,
+      "Description": "The product receives input from an upstream component, but it does not restrict or incorrectly restricts the input before it is used as an identifier for a resource that may be outside the intended sphere of control.",
+      "Files": [
+        "Controllers\\CoursesController.cs"
+      ],
+      "Explanation": "CoursesController.Edit() binds TeachingMaterialImagePath from the POST body and later passes course.TeachingMaterialImagePath to Server.MapPath() and file deletion logic (around lines 130-181 and 227-235). A crafted value can steer file resolution to an unintended server resource."
+    },
+    {
+      "Id": "CWE-502",
+      "Name": "CWE-502: Deserialization of Untrusted Data",
+      "Category": "Injection Attacks",
+      "Severity": "mandatory",
+      "StoryPoint": 13,
+      "Description": "The product deserializes untrusted data without sufficiently ensuring that the resulting data will be valid.",
+      "Files": [
+        "Services\\NotificationService.cs"
+      ],
+      "Explanation": "NotificationService.ReceiveNotification() reads message bodies from MSMQ and directly calls JsonConvert.DeserializeObject\u003CNotification\u003E(jsonContent) (around lines 70-76). The queue is created with broad permissions, so the deserialized payload can be attacker-controlled."
+    }
+  ]
+}

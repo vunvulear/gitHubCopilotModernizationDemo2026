@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Tasks template for modernization plan. Generate this file alongside plan.md to track individual migration tasks.",
+  "tasks": [
+    {
+      "type": "transform",
+      "id": "001-transform-microsoft-entra-id",
+      "description": "Replace Windows authentication with Microsoft Entra ID and align admin access rules. Addresses issues: Windows authentication detected.",
+      "reason": "Azure app hosting options do not support the current Windows-auth dependency, so identity must be modernized before the app can be cut over.",
+      "requirements": "Move the app off Windows authentication so it can run on Azure hosting without relying on workstation or domain sign-in. Preserve the current admin and user experience, keep the MVC authorization flow coherent, and map existing roles or claims so admin-only features still work.",
+      "status": "started",
+      "dependencies": [],
+      "skills": [
+        {
+          "name": "migration-microsoft-entra-id",
+          "location": "builtin"
+        }
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "transform",
+      "id": "002-transform-azure-app-configuration-and-key-vault",
+      "description": "Externalize application settings and secrets into Azure App Configuration and Azure Key Vault. Addresses issues: Connection strings without configuration builders detected.",
+      "reason": "The app currently keeps cloud-facing settings in Web.config and needs a secure, centrally managed configuration source for Azure.",
+      "requirements": "Move non-secret application settings out of Web.config into Azure App Configuration and move secrets or sensitive connection material into Azure Key Vault. Use managed identity for runtime access and keep the current configuration consumers working with minimal shape changes.",
+      "dependencies": [
+        "001-transform-microsoft-entra-id"
+      ],
+      "skills": [
+        {
+          "name": "migration-local-appsettings-azure-app-configuration",
+          "location": "builtin"
+        },
+        {
+          "name": "migration-azure-keyvault-secret",
+          "location": "builtin"
+        },
+        {
+          "name": "migration-managed-identity",
+          "location": "builtin"
+        }
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "transform",
+      "id": "003-transform-azure-sql-database",
+      "description": "Move the EF Core data layer from LocalDB to Azure SQL Database. Addresses issues: SQL database connection detected.",
+      "reason": "The current database is tied to LocalDB and must be replaced with an Azure-managed database service for cloud hosting.",
+      "requirements": "Migrate the EF Core persistence layer to Azure SQL Database while preserving the current schema, seed data, and CRUD behavior. Replace any local integrated-security assumptions with Azure-safe access and keep the application data model consistent during cutover.",
+      "dependencies": [
+        "002-transform-azure-app-configuration-and-key-vault"
+      ],
+      "skills": [
+        {
+          "name": "migration-azure-sql-database",
+          "location": "builtin"
+        },
+        {
+          "name": "migration-managed-identity",
+          "location": "builtin"
+        }
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "transform",
+      "id": "004-transform-teaching-material-storage",
+      "description": "Move teaching-material uploads from local disk to Azure Blob Storage. Addresses issues: Local or network IO operations detected; Static content detected; path traversal risk around uploaded files.",
+      "reason": "The current upload flow relies on local file paths and cannot be depended on in cloud hosting.",
+      "requirements": "Move course teaching-material uploads and deletions off local disk into Azure Blob Storage. Keep upload validation, preserve the stored reference used by the UI and database, and remove filesystem path assumptions from persisted upload handling.",
+      "dependencies": [
+        "003-transform-azure-sql-database"
+      ],
+      "skills": [
+        {
+          "name": "migration-azure-storage-blob",
+          "location": "builtin"
+        },
+        {
+          "name": "migration-managed-identity",
+          "location": "builtin"
+        }
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "transform",
+      "id": "005-transform-azure-servicebus-notifications",
+      "description": "Replace MSMQ-based notifications with Azure Service Bus. Addresses issues: MSMQ usage is detected; improper synchronization and permission assignment around the queue.",
+      "reason": "MSMQ is not a fit for the Azure hosting target and the queue implementation currently has security and concurrency problems.",
+      "requirements": "Replace MSMQ-backed notification handling with Azure Service Bus while preserving the admin notification workflow and queue-based buffering. Remove direct MessageQueue dependencies, eliminate broad queue permissions, and keep notification delivery resilient under Azure hosting.",
+      "dependencies": [
+        "004-transform-teaching-material-storage"
+      ],
+      "skills": [
+        {
+          "name": "migration-azure-servicebus",
+          "location": "builtin"
+        },
+        {
+          "name": "migration-managed-identity",
+          "location": "builtin"
+        }
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "security",
+      "id": "006-security-cve-remediation",
+      "description": "Scan all project dependencies for known CVEs and remediate any identified vulnerabilities before Azure cutover.",
+      "reason": "The application should not move into Azure with known vulnerable dependencies or unresolved security advisories.",
+      "requirements": "Scan all project dependencies for known CVEs and remediate any identified vulnerabilities to the minimum patched version. If a fix requires a major version upgrade, document the affected dependency, the upgraded major version, and the breaking-change risk. Keep the project building and all tests passing after remediation.",
+      "dependencies": [
+        "005-transform-azure-servicebus-notifications"
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "passUnitTests": "true"
+      }
+    }
+  ],
+  "metadata": {
+    "planName": "modernization-plan",
+    "projectName": "ContosoUniversity",
+    "language": "dotnet",
+    "createdAt": "2026-09-23T11:19:10.943+00:00",
+    "version": "1.0"
+  }
+}
